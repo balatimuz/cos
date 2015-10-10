@@ -1,0 +1,20 @@
+﻿version: 1.0
+© 2013 by Kuroato Media
+http://www.kuroato.com/uagk
+
+===============================================================
+
+Version 1.2 
+- Boss Fight Objective
+- Stage Transition through Portals
+- Stage Timer Option 
+- Display Stage Objectives  
+- Camera View Option for each Stage
+- Earn Points from Collectable Items
+- Added Enemy Death FX
+- Player Select Option (2 types)
+
+Version 1.0 
+- First initial release version
+
+-eof-
