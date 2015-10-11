@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SCR_enemyAI : MonoBehaviour {
 
@@ -20,7 +21,14 @@ public class SCR_enemyAI : MonoBehaviour {
 	bool alerted=false;
 	
 	SCR_character character;
-	SCR_character player;
+	//public SCR_character player;
+	public SCR_enemyAI currentTargetEnemy;
+
+	public string groupType = "";
+	
+	public static string GROUP_A = "groupaa";
+	public static string GROUP_B = "groupbb";
+	public static string GROUP_C = "groupcc";
 	
 	int action=0;
 	float actionCounter=0f;
@@ -33,11 +41,15 @@ public class SCR_enemyAI : MonoBehaviour {
 	float startUpCD=0.5f;
 	
 	float[] attackFreq=new float[2];
+
+	public GameObject pointerObj;
 	
 
 	public void StartUp () {
 		character=GetComponent<SCR_character>();
-		player=GameObject.FindWithTag ("Player").GetComponent<SCR_character>();
+
+		//player=GameObject.FindWithTag ("Player").GetComponent<SCR_character>();
+		setMYPlayer ();
 		CheckPlayerDistance(0);
 		
 		aggression=Mathf.Clamp(aggression,1,5);
@@ -47,7 +59,8 @@ public class SCR_enemyAI : MonoBehaviour {
 		attackFreq[1]=(attackFreq[0]+0.55f);
 		
 		if(alerted){
-			character.SetRotAngle(player.transform.position);
+			if(currentTargetEnemy!=null)
+			character.SetRotAngle(currentTargetEnemy.transform.position);
 		}	else {
 			character.SetPatrolSpeed(true);
 			character.SetRandomRotAngle();
@@ -58,10 +71,42 @@ public class SCR_enemyAI : MonoBehaviour {
 		character.SetRotTarget();
 		transform.rotation=character.rotTarget;
 	}
-	
+
+	public List<SCR_enemyAI> AllMyEnemys;
+	float curDistance;
+	void setMYPlayer(){
+
+		if(SCR_main.allPlayersGroup_A.Contains(this)){
+			groupType = GROUP_A;
+			AllMyEnemys = SCR_main.allPlayersGroup_B;
+		}else if(SCR_main.allPlayersGroup_B.Contains(this)){
+			groupType = GROUP_B;
+			AllMyEnemys = SCR_main.allPlayersGroup_A;
+			Debug.Log("GroupA players="+AllMyEnemys.Count);
+		}
+
+		float distance = Mathf.Infinity; 
+		Vector3 position = transform.position; 
+		foreach (SCR_enemyAI myPlyr in AllMyEnemys) {
+			if(myPlyr.groupType != groupType){
+				curDistance = Vector3.Distance(myPlyr.transform.position , transform.position);
+				if (curDistance < distance) { 
+					currentTargetEnemy = myPlyr; 
+					distance = curDistance;
+				} 
+			}
+		}
+
+		if (currentTargetEnemy == null) {
+			//currentTargetEnemy = GameObject.FindWithTag ("Player").GetComponent<SCR_character> ();
+			Debug.Log("no groups found..");
+		} else {
+			Debug.Log("found closest..");
+		}
+	}
 	
 	void Update () {
-		
+			setMYPlayer ();
 		if(startUpCD>0f){
 			startUpCD=Mathf.MoveTowards(startUpCD,0f,Time.deltaTime);
 			if(startUpCD==0f){
@@ -111,7 +156,7 @@ public class SCR_enemyAI : MonoBehaviour {
 	
 	void UpdateAction(){
 		
-		character.SetRotAngle(player.transform.position);
+		character.SetRotAngle(currentTargetEnemy.transform.position);
 		
 		actionCounter+=Time.deltaTime;
 		
@@ -173,12 +218,14 @@ public class SCR_enemyAI : MonoBehaviour {
 	}
 	
 	void CheckPlayerDistance(int com){
+		if (currentTargetEnemy == null)
+			return;
 		bool inRange=false;
-		float playerDist=Vector2.Distance(	new Vector2(player.transform.position.x,player.transform.position.z),
+		float playerDist=Vector2.Distance(	new Vector2(currentTargetEnemy.transform.position.x,currentTargetEnemy.transform.position.z),
 											new Vector2(transform.position.x,transform.position.z));
 		
 		if(com==0){
-			if(player.stunned<2){
+			if(currentTargetEnemy.stunned<2){
 				if(playerDist<detectRange){
 					alerted=true;
 					character.SetPatrolSpeed(false);
@@ -289,8 +336,10 @@ public class SCR_enemyAI : MonoBehaviour {
 					}
 				}	else {
 					if(action==3){
-						character.attackPoint=player.transform.position;
-						character.AttackStart();
+						if(currentTargetEnemy!=null){
+							character.attackPoint=currentTargetEnemy.transform.position;
+							character.AttackStart();
+						}
 					}	else {
 						if(action==20){
 							character.PlayAnim(0);
@@ -311,11 +360,12 @@ public class SCR_enemyAI : MonoBehaviour {
 			SetAction (20);
 		}
 	}
-	
+	public int stunned;
 	public void Damage(){
 		if(alerted==false){
 			character.SetPatrolSpeed(false);
 			alerted=true;
+			stunned=1;
 		}
 	}
 	
@@ -323,5 +373,12 @@ public class SCR_enemyAI : MonoBehaviour {
 	    GameObject deathInst = Instantiate(deathObj, transform.position, transform.rotation) as GameObject;
 		SCR_main.score+=points;
 		SetAction (10);
+		stunned=2; //btmadded
+
+		if(SCR_main.allPlayersGroup_A.Contains(this)){
+			SCR_main.allPlayersGroup_A.Remove(this);
+		}else if(SCR_main.allPlayersGroup_B.Contains(this)){
+			SCR_main.allPlayersGroup_B.Remove(this);;
+		}
 	}
 }

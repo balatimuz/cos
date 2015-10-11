@@ -73,7 +73,8 @@ public class SCR_main : MonoBehaviour {
 	
 	public static string gotoScene="menu";
 	SCR_screenCover screenFade;
-	
+	public static List<SCR_enemyAI> allPlayersGroup_A = new List<SCR_enemyAI>();
+	public static List<SCR_enemyAI> allPlayersGroup_B = new List<SCR_enemyAI>();
 	// Use this for initialization
 	void Awake () {
 		

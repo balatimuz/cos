@@ -5,7 +5,7 @@ public class SCR_enemySpawner : MonoBehaviour {
 
 	public bool enemyBossFight;
 	
-	public GameObject[] enemyObjects;
+	public SCR_enemyAI[] enemyObjects;
 	//an array of all the different types of enemies that can spawn.
 	
 	public int[] enemySpawnChance;
@@ -148,7 +148,16 @@ public class SCR_enemySpawner : MonoBehaviour {
 	}
 	
 	void CreateEnemy(int enemySlot,Vector3 enemyPos){
-		GameObject enemyInst = Instantiate(enemyObjects[enemySlot],enemyPos,Quaternion.identity) as GameObject;
+		SCR_enemyAI enemyInst = Instantiate(enemyObjects[enemySlot],enemyPos,Quaternion.identity) as SCR_enemyAI;
+
+		if (enemyPos.x < 0) {
+			SCR_main.allPlayersGroup_A.Add (enemyInst);
+		} else {
+			SCR_main.allPlayersGroup_B.Add (enemyInst);
+			if(enemyInst.pointerObj)
+			enemyInst.pointerObj.SetActive(false);
+		}
+
 		enemyInst.GetComponent<SCR_characterHealth>().StartUp(enemyTotal);
 		
 		enemyTotal++;

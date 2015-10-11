@@ -72,7 +72,7 @@ public class SCR_projectile : MonoBehaviour
 	{
 		if (isActive) {
 			Vector3 addingVal = (transform.forward * speed * Time.deltaTime);
-			Debug.Log ("Force=xx=" + addingVal.x + " zz=" + addingVal.z);
+			//Debug.Log ("Force=xx=" + addingVal.x + " zz=" + addingVal.z);
 			GetComponent<Rigidbody> ().MovePosition (GetComponent<Rigidbody> ().transform.position + addingVal);
 		}
 	}
